@@ -8,11 +8,7 @@ def is_symmetric_nonsingular(A, tol=1e-10):
     if not np.allclose(A, A.T, atol=tol):
         check_symmetric = False
     # Kiểm tra ma trận không suy biến
-    det_A = np.linalg.det(A)
-    check_nonsingular = True
-    if abs(det_A) < tol:
-        check_nonsingular = False
-    return check_symmetric, check_nonsingular
+    return check_symmetric
 
 def read_augmented_matrix_from_file(filename):
     with open(filename, 'r') as file:
@@ -28,10 +24,17 @@ def read_augmented_matrix_from_file(filename):
         return matrix, b
 def extrac_matrix_U(A, m, n):
     U = np.zeros((m, n), dtype=complex)
+    check_nonsingular = False
     for i in range(m):
+        if check_nonsingular:
+            break
         sum_row = 0.0
         for k in range(i):
             sum_row += U[k, i]**2
+        if A[i, i] - sum_row < 0:
+            check_nonsingular = True
+            print("Ma trận không đối xứng dương.")
+            break
         U[i, i] = np.sqrt(A[i, i] - sum_row)
         # Đảm bảo phần ảo của U[i, i] là 0 nếu nó quá nhỏ
         if np.abs(U[i, i].imag) < 1e-10:
@@ -81,11 +84,10 @@ def main():
     filename = "cholesky.txt"
     A, b = read_augmented_matrix_from_file(filename)
     # Kiểm tra ma trận đối xứng và không suy biến
-    check_symmetric, check_nonsingular = is_symmetric_nonsingular(A)
+    check_symmetric = is_symmetric_nonsingular(A)
     print(f"Ma trận{'' if check_symmetric else ' không'} đối xứng")
     if not check_symmetric:
         print("Phải dùng At*A*x = At*B")
-    print(f"Ma trận{' không' if check_nonsingular else ''} suy biến")
     b = b.reshape(-1,1) if check_symmetric else np.dot(A.T, b.reshape(-1, 1))
     m, n = A.shape
     U = extrac_matrix_U(A, m, n) if check_symmetric else A
