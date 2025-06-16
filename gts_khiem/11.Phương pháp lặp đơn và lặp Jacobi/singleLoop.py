@@ -21,18 +21,15 @@ def read_augmented_matrix_from_file(filename):
 def convert_to_BXd_matrix(A, b):
     m = len(A)
     for i in range(m):
-        b[i] = b[i] / A[i,i]
-        for j in range(len(A[i])):
-            if i != j:
-                A[i,j] = -A[i,j]/A[i,i]
-        A[i,i] = 0
+        b[i] = -1*b[i]
+        A[i,i] = -1*(-1 - A[i,i])
     augmented_matrix = np.concatenate((A, b.reshape(m,1)), axis = 1)
     print(tabulate(augmented_matrix, tablefmt="grid", floatfmt=".8f"))
     return augmented_matrix
 
 def solve_single_loop_method(BXd, X_0, maxLoop, exp, TH):
     B = BXd[:,:-1]
-    d = BXd[:, -1].reshape(3, 1)
+    d = BXd[:, -1].reshape(m, 1)
     standard_array = np.zeros(len(B), dtype=float)
     for i in range(len(B)):
         sum_row = 0.0
@@ -52,7 +49,7 @@ def solve_single_loop_method(BXd, X_0, maxLoop, exp, TH):
     n = len(B[0])
     headers = np.array(("k"))
     for i in range(n):
-        headers = np.append(headers, "x_" + str(i))
+        headers = np.append(headers, "x_" + str(i + 1))
     headers = np.append(headers, "exp")
     data = np.array([np.concatenate(([0], X_pre.reshape(-1), [None]))])
     print(tabulate(data, headers=headers, tablefmt="grid", floatfmt=".8f"))
@@ -74,8 +71,10 @@ def solve_single_loop_method(BXd, X_0, maxLoop, exp, TH):
             if(omega_X_k < exp / 2):
                 check_exp = False
         if TH == 3:
-            omega_X_k = q*np.max(np.abs(X_k - X_pre))/(1-q)
-            omega_X_k = omega_X_k/np.max(np.abs(X_k)) 
+            omega_X_k = np.max(np.abs(X_k - X_pre))
+            omega_X_k = omega_X_k/np.max(np.abs(X_k))
+            if omega_X_k < exp:
+                check_exp = False
         data = np.array([np.concatenate(([int(k + 1)], X_k.reshape(-1), [omega_X_k] ))])
         print(tabulate(data, tablefmt="grid", floatfmt=".8f"))
         k += 1

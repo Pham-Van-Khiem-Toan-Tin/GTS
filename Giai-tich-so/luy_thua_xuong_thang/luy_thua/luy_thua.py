@@ -1,6 +1,6 @@
 import numpy as np
 
-from luy_thua_xuong_thang.normalization import normalize_L2
+from normalization import normalize_L2
 
 # Đọc dữ liệu từ file
 with open("input.txt", "r") as f:
